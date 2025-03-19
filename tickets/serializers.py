@@ -11,7 +11,7 @@ class ReservationSerializer(serializers.ModelSerializer):
         model=Reservation
         fields='__all__'
 
-class GuestReservation(serializers.ModelSerializer):
+class GuestSerializer(serializers.ModelSerializer):
     class Meta:
         model=Guest
         fields=['PK','reservation','name','phone']

@@ -23,4 +23,23 @@ def get_guests(request):
             return Response(serializer.data,status=status.HTTP_201_CREATED)
        #if request data is not valid
        return Response(serializer.data,status=status.HTTP_400_BAD_REQUEST)
-       
+         
+#GET PUT DELETE
+@api_view(['GET','PUT','DELETE'])
+def guest(request, pk):
+    try:
+      _guest=Guest.objects.get(pk=id)
+    except Guest.DoesNotExist:
+         return Response(status=status.HTTP_404_NOT_FOUND)    
+    if request.method== 'GET':
+      serializer=GuestSerializer(_guest)
+      return Response(serializer.data)
+    elif request.method=='PUT':
+      serializer=GuestSerializer(_guest,data=request.data)
+      if serializer.is_valid():
+           serializer.save()
+           return Response(serializer.data,status=status.HTTP_202_ACCEPTED)
+      return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    elif request.method=='DELETE':
+         _guest=Guest.delete()
+         return Response(status=status.HTTP_204_NO_CONTENT)

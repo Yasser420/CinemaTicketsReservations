@@ -5,5 +5,5 @@ from tickets import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('guests/', views.guests.as_view()),
-   # path('guests/<int:pk>',views.guest)
+    path('guests/<int:pk>',views.CBV_PK().as_view())
 ]

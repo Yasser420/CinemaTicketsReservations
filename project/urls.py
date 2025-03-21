@@ -4,5 +4,6 @@ from django.urls import path
 from tickets import views
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('guests/', views.get_guests),
+    path('guests/', views.guests.as_view()),
+   # path('guests/<int:pk>',views.guest)
 ]

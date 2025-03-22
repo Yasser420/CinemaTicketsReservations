@@ -11,7 +11,9 @@ router.register('reservations', views.reservation_CRUD)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('search/movie', views.find_movie) , 
     # path('guests/', views.guests.as_view()),
     # path('guests/<int:pk>',views.CBV_PK().as_view())
     path('api1/', include(router.urls))
+   
 ]

@@ -101,3 +101,10 @@ class  movie_CRUD(viewsets.ModelViewSet):
 class  reservation_CRUD(viewsets.ModelViewSet):
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
+@api_view(['GET'])
+def find_movie(request):
+    movies = Movie.objects.filter(
+        name = request.data['name']
+    )
+    serializer = MovieSerializer(movies , many=True)
+    return Response(serializer.data,status=status.HTTP_200_OK)

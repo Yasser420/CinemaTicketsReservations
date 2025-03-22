@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from .models import Guest
+from .models import Guest , Movie , Reservation
 from django.http.response import JsonResponse 
 from .serializers import MovieSerializer ,ReservationSerializer , GuestSerializer
 from django.http import Http404
@@ -93,3 +93,11 @@ class CBV_PK(APIView):
 class  guest_CRUD(viewsets.ModelViewSet):
     queryset = Guest.objects.all()
     serializer_class = GuestSerializer
+    
+class  movie_CRUD(viewsets.ModelViewSet):
+    queryset = Movie.objects.all()
+    serializer_class = MovieSerializer
+
+class  reservation_CRUD(viewsets.ModelViewSet):
+    queryset = Reservation.objects.all()
+    serializer_class = ReservationSerializer

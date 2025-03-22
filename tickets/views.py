@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework import status ,  viewsets
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
-
+from fuzzywuzzy import process
 # Create your views here.
 #function based view 
 #the get_guests_rest function is used for both GET and POST methods for the same endpoint with different business logic
@@ -103,8 +103,12 @@ class  reservation_CRUD(viewsets.ModelViewSet):
     serializer_class = ReservationSerializer
 @api_view(['GET'])
 def find_movie(request):
-    movies = Movie.objects.filter(
-        name = request.data['name']
-    )
-    serializer = MovieSerializer(movies , many=True)
-    return Response(serializer.data,status=status.HTTP_200_OK)
+   user_search = request.data['name']
+   movies = Movie.objects.values_list('name',flat=True)
+   best_movie_result , score = process.extractOne(user_search , movies)
+   if score > 60 : 
+       suggested_movies = Movie.objects.filter(name = best_movie_result) 
+       serializer = MovieSerializer(suggested_movies , many=True)
+       return Response(serializer.data, status=status.HTTP_200_OK)
+   return Response({"message": "No similar movie found"}, status=status.HTTP_404_NOT_FOUND)
+

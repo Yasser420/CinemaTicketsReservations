@@ -13,4 +13,4 @@ class Movie(models.Model):
 class Reservation(models.Model):
     guest=models.ForeignKey(Guest, related_name='reservation',on_delete=models.CASCADE)
     movie=models.ForeignKey(Movie, related_name='reservation',on_delete=models.CASCADE)
-    reservation_date=models.CharField(max_length=10,null=False)
+    reservation_date=models.DateTimeField(null=False)

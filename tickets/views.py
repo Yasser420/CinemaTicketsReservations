@@ -4,7 +4,7 @@ from django.http.response import JsonResponse
 from .serializers import MovieSerializer ,ReservationSerializer , GuestSerializer
 from django.http import Http404
 from rest_framework.response import Response 
-from rest_framework import status
+from rest_framework import status ,  viewsets
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 
@@ -87,4 +87,9 @@ class CBV_PK(APIView):
     def delete(self,request,pk):
         guest=self.get_object(pk)
         guest.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)   
+        return Response(status=status.HTTP_204_NO_CONTENT)  
+    
+ #use view sets for my CRUD operations   
+class  guest_CRUD(viewsets.ModelViewSet):
+    queryset = Guest.objects.all()
+    serializer_class = GuestSerializer

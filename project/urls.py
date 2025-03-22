@@ -6,6 +6,9 @@ from rest_framework.routers import DefaultRouter
 
 router = DefaultRouter()
 router.register('guests', views.guest_CRUD)
+router.register('movies', views.movie_CRUD)
+router.register('reservations', views.reservation_CRUD)
+
 urlpatterns = [
     path('admin/', admin.site.urls),
     # path('guests/', views.guests.as_view()),

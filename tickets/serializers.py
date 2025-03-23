@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Guest , Reservation , Movie
+from .models import User , Reservation , Movie
 
 class MovieSerializer(serializers.ModelSerializer):
     class Meta:
@@ -11,9 +11,19 @@ class ReservationSerializer(serializers.ModelSerializer):
         model=Reservation
         fields='__all__'
 
-class GuestSerializer(serializers.ModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model=Guest
-        fields=['id','reservation','name','phone']
+        model=User
+        fields=['id','role', 'username','password' , 'email']
+        extra_kwargs = {
+            'password' : {'write_only': True}
+        }
+    def create(self, validated_data):
+        password = validated_data.pop('password',None)
+        instance = self.Meta.model(**validated_data)
+        if password is not None: 
+           instance.set_password(password)
+        instance.save()
+        return instance 
         
         

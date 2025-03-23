@@ -1,114 +1,144 @@
 from django.shortcuts import render
-from .models import Guest , Movie , Reservation
+from .models import User , Movie , Reservation
 from django.http.response import JsonResponse 
-from .serializers import MovieSerializer ,ReservationSerializer , GuestSerializer
+from .serializers import MovieSerializer ,ReservationSerializer , UserSerializer
 from django.http import Http404
 from rest_framework.response import Response 
 from rest_framework import status ,  viewsets
 from rest_framework.decorators import api_view
 from rest_framework.views import APIView
 from fuzzywuzzy import process
-# Create your views here.
-#function based view 
-#the get_guests_rest function is used for both GET and POST methods for the same endpoint with different business logic
-# @api_view(['GET','POST'])
-# def get_guests(request):
-#      #if the request is GET method
-#      if request.method== 'GET': 
-#          guests= Guest.objects.all()
-#          serializer = GuestSerializer(guests,many=True)
-#          return Response(serializer.data , status=status.HTTP_200_OK)
-#      elif request.method == 'POST':    
-#        serializer = GuestSerializer(data=request.data)
-#        #if the request data is valid
-#        if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data,status=status.HTTP_201_CREATED)
-#        #if request data is not valid
-#        return Response(serializer.data,status=status.HTTP_400_BAD_REQUEST)
+from rest_framework.exceptions import AuthenticationFailed , ValidationError
+import jwt , datetime 
+# # Create your views here.
+# #function based view 
+# #the get_guests_rest function is used for both GET and POST methods for the same endpoint with different business logic
+# # @api_view(['GET','POST'])
+# # def get_guests(request):
+# #      #if the request is GET method
+# #      if request.method== 'GET': 
+# #          guests= Guest.objects.all()
+# #          serializer = GuestSerializer(guests,many=True)
+# #          return Response(serializer.data , status=status.HTTP_200_OK)
+# #      elif request.method == 'POST':    
+# #        serializer = GuestSerializer(data=request.data)
+# #        #if the request data is valid
+# #        if serializer.is_valid():
+# #             serializer.save()
+# #             return Response(serializer.data,status=status.HTTP_201_CREATED)
+# #        #if request data is not valid
+# #        return Response(serializer.data,status=status.HTTP_400_BAD_REQUEST)
          
-# #GET PUT DELETE
-# @api_view(['GET','PUT','DELETE'])
-# def guest(request, pk):
-#     try:
-#       _guest=Guest.objects.get(pk=pk)
-#     except Guest.DoesNotExist:
-#          return Response(status=status.HTTP_404_NOT_FOUND)    
-#     if request.method== 'GET':
-#       serializer=GuestSerializer(_guest)
-#       return Response(serializer.data)
-#     elif request.method=='PUT':
-#       serializer=GuestSerializer(_guest,data=request.data)
-#       if serializer.is_valid():
-#            serializer.save()
-#            return Response(serializer.data,status=status.HTTP_202_ACCEPTED)
-#       return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
-#     elif request.method=='DELETE':
-#          _guest.delete()
-#          return Response(status=status.HTTP_204_NO_CONTENT)
+# # #GET PUT DELETE
+# # @api_view(['GET','PUT','DELETE'])
+# # def guest(request, pk):
+# #     try:
+# #       _guest=Guest.objects.get(pk=pk)
+# #     except Guest.DoesNotExist:
+# #          return Response(status=status.HTTP_404_NOT_FOUND)    
+# #     if request.method== 'GET':
+# #       serializer=GuestSerializer(_guest)
+# #       return Response(serializer.data)
+# #     elif request.method=='PUT':
+# #       serializer=GuestSerializer(_guest,data=request.data)
+# #       if serializer.is_valid():
+# #            serializer.save()
+# #            return Response(serializer.data,status=status.HTTP_202_ACCEPTED)
+# #       return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+# #     elif request.method=='DELETE':
+# #          _guest.delete()
+# #          return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 
 
-#use class based views for GET List and POST object
+# #use class based views for GET List and POST object
 
-#get list of guests
-class guests(APIView):
-     def get(self, request): 
-         guests=Guest.objects.all()
-         serializer=GuestSerializer(guests,many=True)
-         return Response(serializer.data,status=status.HTTP_200_OK)
+# #get list of guests
+# @api_view(['POST'])
+# def UserRegister(request):
+    
+
+
+# class guests(APIView):
+#      def get(self, request): 
+#          guests=User.objects.all()
+#          serializer=GuestSerializer(guests,many=True)
+#          return Response(serializer.data,status=status.HTTP_200_OK)
      
-     def post(self,request):
-         serializer=GuestSerializer(data=request.data)   
-         if serializer.is_valid():
-              serializer.save()
-              return Response(serializer.data,status=status.HTTP_201_CREATED)
-         return Response({"errors": serializer.errors},status=status.HTTP_400_BAD_REQUEST)  
+#      def post(self,request):
+#          serializer=GuestSerializer(data=request.data)   
+#          if serializer.is_valid():
+#               serializer.save()
+#               return Response(serializer.data,status=status.HTTP_201_CREATED)
+#          return Response({"errors": serializer.errors},status=status.HTTP_400_BAD_REQUEST)  
 
-class CBV_PK(APIView):
-    def get_object(self,pk):
-        try:
-            return Guest.objects.get(pk=pk)
-        except Guest.DoesNotExist:
-            raise Http404
-    def get(self,request,pk):
-        guest=self.get_object(pk)
-        serializer=GuestSerializer(guest)
-        return Response(serializer.data,status=status.HTTP_200_OK)
-    def put(self,request,pk):
-        guest=self.get_object(pk)
-        serializer=GuestSerializer(guest,data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(data=serializer.data,status=status.HTTP_202_ACCEPTED)
-        return Response({'errors':serializer.errors},status=status.HTTP_400_BAD_REQUEST)
+# class CBV_PK(APIView):
+#     def get_object(self,pk):
+#         try:
+#             return User.objects.get(pk=pk)
+#         except User.DoesNotExist:
+#             raise Http404
+#     def get(self,request,pk):
+#         guest=self.get_object(pk)
+#         serializer=GuestSerializer(guest)
+#         return Response(serializer.data,status=status.HTTP_200_OK)
+#     def put(self,request,pk):
+#         guest=self.get_object(pk)
+#         serializer=GuestSerializer(guest,data=request.data)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(data=serializer.data,status=status.HTTP_202_ACCEPTED)
+#         return Response({'errors':serializer.errors},status=status.HTTP_400_BAD_REQUEST)
     
-    def delete(self,request,pk):
-        guest=self.get_object(pk)
-        guest.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)  
+#     def delete(self,request,pk):
+#         guest=self.get_object(pk)
+#         guest.delete()
+#         return Response(status=status.HTTP_204_NO_CONTENT)  
     
- #use view sets for my CRUD operations   
-class  guest_CRUD(viewsets.ModelViewSet):
-    queryset = Guest.objects.all()
-    serializer_class = GuestSerializer
+#  #use view sets for my CRUD operations   
+# class  guest_CRUD(viewsets.ModelViewSet):
+#     queryset = User.objects.all()
+#     serializer_class = GuestSerializer
     
-class  movie_CRUD(viewsets.ModelViewSet):
-    queryset = Movie.objects.all()
-    serializer_class = MovieSerializer
+# class  movie_CRUD(viewsets.ModelViewSet):
+#     queryset = Movie.objects.all()
+#     serializer_class = MovieSerializer
 
-class  reservation_CRUD(viewsets.ModelViewSet):
-    queryset = Reservation.objects.all()
-    serializer_class = ReservationSerializer
-@api_view(['GET'])
-def find_movie(request):
-   user_search = request.data['name']
-   movies = Movie.objects.values_list('name',flat=True)
-   best_movie_result , score = process.extractOne(user_search , movies)
-   if score > 60 : 
-       suggested_movies = Movie.objects.filter(name = best_movie_result) 
-       serializer = MovieSerializer(suggested_movies , many=True)
-       return Response(serializer.data, status=status.HTTP_200_OK)
-   return Response({"message": "No similar movie found"}, status=status.HTTP_404_NOT_FOUND)
+# class  reservation_CRUD(viewsets.ModelViewSet):
+#     queryset = Reservation.objects.all()
+#     serializer_class = ReservationSerializer
+# @api_view(['GET'])
+# def find_movie(request):
+#    user_search = request.data['name']
+#    movies = Movie.objects.values_list('name',flat=True)
+#    best_movie_result , score = process.extractOne(user_search , movies)
+#    if score > 60 : 
+#        suggested_movies = Movie.objects.filter(name = best_movie_result) 
+#        serializer = MovieSerializer(suggested_movies , many=True)
+#        return Response(serializer.data, status=status.HTTP_200_OK)
+#    return Response({"message": "No similar movie found"}, status=status.HTTP_404_NOT_FOUND)
 
+class RegisterView(APIView): 
+    def post(self , request):
+      serializer = UserSerializer(data=request.data)
+      serializer.is_valid(raise_exception=True)
+      serializer.save()
+      return Response(serializer.data , status=status.HTTP_201_CREATED)
+class LoginView (APIView):
+    def post (self,request): 
+        email = request.data.get('email')
+        password = request.data.get('password')
+
+        if not email or not password:
+            raise ValidationError('Email and password are required.')
+        
+        user = User.objects.filter(email = email).first()
+        
+        if user is None : 
+            raise ValidationError('User not found')
+        
+        if not user.check_password(password): 
+            raise ValidationError('Incorrect password')
+        return Response (status=status.HTTP_200_OK)
+         

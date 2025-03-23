@@ -27,6 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+AUTH_USER_MODEL = 'tickets.User'
 
 # Application definition
 
@@ -42,7 +43,7 @@ INSTALLED_APPS = [
 ]
 
 REST_FRAMEWORK={}
- 
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',

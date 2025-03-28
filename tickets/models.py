@@ -8,8 +8,12 @@ class User(AbstractUser):
        ('super admin' , 'Super Admin')
    ]
    role = models.CharField(max_length=20 , choices=ROLE_CHOICES , default='user')
+   address = models.TextField(max_length=200 , blank=True)
    email=models.EmailField(max_length=50, unique=True)
-  
+   USERNAME_FIELD = "email"  
+   REQUIRED_FIELDS = ['username'] 
+
+   
 class Movie(models.Model):
     name=models.CharField(max_length=20)
     release_date =models.DateField(auto_now_add=True)

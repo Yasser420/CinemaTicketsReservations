@@ -1,15 +1,21 @@
 from django.shortcuts import render
 from .models import User , Movie , Reservation
 from django.http.response import JsonResponse 
-from .serializers import MovieSerializer ,ReservationSerializer , UserSerializer
+from .serializers import MovieSerializer ,ReservationSerializer  , UserLoginSerializer ,  UserRegisterSerializer , AddAdminSerializer
 from django.http import Http404
 from rest_framework.response import Response 
 from rest_framework import status ,  viewsets
-from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import api_view , permission_classes
 from rest_framework.views import APIView
 from fuzzywuzzy import process
 from rest_framework.exceptions import AuthenticationFailed , ValidationError
 import jwt , datetime 
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.permissions import AllowAny
+from .permissions import IsSuperAdmin
+# from .permissions import IsUser
 # # Create your views here.
 # #function based view 
 # #the get_guests_rest function is used for both GET and POST methods for the same endpoint with different business logic
@@ -109,6 +115,7 @@ import jwt , datetime
 #     queryset = Reservation.objects.all()
 #     serializer_class = ReservationSerializer
 # @api_view(['GET'])
+# @permission_classes([IsAuthenticated])
 # def find_movie(request):
 #    user_search = request.data['name']
 #    movies = Movie.objects.values_list('name',flat=True)
@@ -119,26 +126,24 @@ import jwt , datetime
 #        return Response(serializer.data, status=status.HTTP_200_OK)
 #    return Response({"message": "No similar movie found"}, status=status.HTTP_404_NOT_FOUND)
 
-class RegisterView(APIView): 
-    def post(self , request):
-      serializer = UserSerializer(data=request.data)
-      serializer.is_valid(raise_exception=True)
-      serializer.save()
-      return Response(serializer.data , status=status.HTTP_201_CREATED)
-class LoginView (APIView):
-    def post (self,request): 
-        email = request.data.get('email')
-        password = request.data.get('password')
-
-        if not email or not password:
-            raise ValidationError('Email and password are required.')
-        
-        user = User.objects.filter(email = email).first()
-        
-        if user is None : 
-            raise ValidationError('User not found')
-        
-        if not user.check_password(password): 
-            raise ValidationError('Incorrect password')
-        return Response (status=status.HTTP_200_OK)
-         
+class UserRegsiterView(APIView):
+  permission_classes= [AllowAny]
+  def post(self,request): 
+    userRegisterSerializer = UserRegisterSerializer(data=request.data)
+    if userRegisterSerializer.is_valid():
+      userRegisterSerializer.save()
+      return Response(userRegisterSerializer.data,status=status.HTTP_201_CREATED)
+    return Response(userRegisterSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
+  
+class UserLoginView(TokenObtainPairView):
+  serilaizer_class  = UserLoginSerializer
+  
+class AddAdminView(APIView):
+  permission_classes=[IsSuperAdmin]
+  def post(self,request): 
+    addAdminSerializer = AddAdminSerializer(data=request.data)
+    if addAdminSerializer.is_valid():
+      addAdminSerializer.save()
+      return Response(addAdminSerializer.data,status=status.HTTP_201_CREATED)
+    return Response(addAdminSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
+  

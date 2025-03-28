@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from .models import User , Movie , Reservation
 from django.http.response import JsonResponse 
-from .serializers import MovieSerializer ,ReservationSerializer  , UserLoginSerializer ,  RegisterUserSerializer , AddAdminSerializer
+from .serializers import MovieSerializer ,ReservationSerializer  , UserLoginSerializer ,  RegisterUserSerializer , AddAdminSerializer ,UserSerializer
 from django.http import Http404
 from rest_framework.response import Response 
 from rest_framework import status ,  viewsets
@@ -139,11 +139,35 @@ class UserLoginView(TokenObtainPairView):
   serilaizer_class  = UserLoginSerializer
   
 class AddAdminView(APIView):
-  permission_classes=[IsSuperAdmin]
+  permission_classes=[IsAuthenticated,IsSuperAdmin]
   def post(self,request): 
     addAdminSerializer = AddAdminSerializer(data=request.data)
     if addAdminSerializer.is_valid():
       addAdminSerializer.save()
       return Response(addAdminSerializer.data,status=status.HTTP_201_CREATED)
     return Response(addAdminSerializer.errors, status=status.HTTP_400_BAD_REQUEST)
+  
+class SuperAdminUsersView(APIView):
+  permission_classes=[IsAuthenticated,IsSuperAdmin]
+  def get(self,request): 
+    role = request.query_params.get('role', None)
+    print(request.user.role)
+    if role: 
+      users = User.objects.filter(role = role)
+    else:
+      users = User.objects.exclude(role='super admin')
+    userSerializer = UserSerializer(users,many=True)
+    return Response(userSerializer.data ,status=status.HTTP_200_OK)
+  def delete(self,request, pk):
+    try: 
+      user = User.objects.get(pk=pk)
+      is_super_admin = user.role=='super admin'
+      if is_super_admin:
+        return Response({"message":"you can not delete super admin"} , status=status.HTTP_403_FORBIDDEN)
+      
+      user.delete()
+      return Response(status=status.HTTP_204_NO_CONTENT)
+    except user.DoesNotExist:
+      return Response(status=status.HTTP_404_NOT_FOUND)
+      
   

@@ -21,43 +21,30 @@ class ReservationSerializer(serializers.ModelSerializer):
 
 
     
-class UserLoginSerializer(TokenObtainPairSerializer):
-    role = serializers.ChoiceField(choices=User.ROLE_CHOICES, required=True)
-   
 
+class UserLoginSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
-        """Authenticate user with email, password, and role."""
         email = attrs.get("email")
         password = attrs.get("password")
-        role = attrs.get("role")
-
-        if not role:
-            raise serializers.ValidationError("Role is required.")
 
         try:
             user = User.objects.get(email=email)
 
-            # Validate password
             if not user.check_password(password):
-                raise serializers.ValidationError("Invalid credentials.")
-
-            # Validate role
-            if user.role != role:
-                raise serializers.ValidationError("Please provide the correct role.")
+                raise serializers.ValidationError("Password is wrong")
 
         except User.DoesNotExist:
             raise serializers.ValidationError("Invalid credentials.")
 
-        # Generate token using the correct email instead of username
         data = super().validate({"email": user.email, "password": password})
-        data['username']=user.username
-        data['email']=user.email
-        data['role']=user.role
-        data['userId']=user.pk
-    
+
+        data['username'] = user.username
+        data['email'] = user.email
+        data['role'] = user.role  
+        data['userId'] = user.pk
+
         return data
     
-
 class BaseUserSerializer(serializers.ModelSerializer):
     passwordConfirm = serializers.CharField(write_only=True)
 
@@ -94,9 +81,9 @@ class BaseUserSerializer(serializers.ModelSerializer):
 class RegisterUserSerializer(BaseUserSerializer):
     """Serializer for user registration (default role: 'user')."""
     def get_role(self):
-        return 'user'  # Explicitly returning user role
+        return 'user'
             
 class AddAdminSerializer(BaseUserSerializer):
     """Serializer for adding an admin (role: 'admin')."""
     def get_role(self):
-        return 'admin'  # Explicitly returning admin role
+        return 'admin'  

@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from .models import User , Movie , Reservation
 from django.http.response import JsonResponse 
-from .serializers import MovieSerializer ,ReservationSerializer  , UserLoginSerializer ,  UserRegisterSerializer , AddAdminSerializer
+from .serializers import MovieSerializer ,ReservationSerializer  , UserLoginSerializer ,  RegisterUserSerializer , AddAdminSerializer
 from django.http import Http404
 from rest_framework.response import Response 
 from rest_framework import status ,  viewsets
@@ -126,10 +126,10 @@ from .permissions import IsSuperAdmin
 #        return Response(serializer.data, status=status.HTTP_200_OK)
 #    return Response({"message": "No similar movie found"}, status=status.HTTP_404_NOT_FOUND)
 
-class UserRegsiterView(APIView):
+class RegisterUserView(APIView):
   permission_classes= [AllowAny]
   def post(self,request): 
-    userRegisterSerializer = UserRegisterSerializer(data=request.data)
+    userRegisterSerializer = RegisterUserSerializer(data=request.data)
     if userRegisterSerializer.is_valid():
       userRegisterSerializer.save()
       return Response(userRegisterSerializer.data,status=status.HTTP_201_CREATED)

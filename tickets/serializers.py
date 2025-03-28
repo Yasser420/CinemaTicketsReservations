@@ -20,41 +20,6 @@ class ReservationSerializer(serializers.ModelSerializer):
         fields='__all__'
 
 
-class UserRegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True , validators=[validate_password])   
-    passwordConfirm = serializers.CharField(write_only=True)
-    class Meta : 
-        model = User
-        fields = ['username' , 'email' , 'password' , 'passwordConfirm']
-        extra_kwargs = {
-            'email': {'required':True}
-        }
-    def validate(self, attrs):
-        if attrs['password'] != attrs['passwordConfirm'] : 
-            raise serializers.ValidationError('passwords are not match')
-        attrs.pop('passwordConfirm', None)
-        return attrs 
-    def create(self, validated_data):
-    
-     try:
-        user = User.objects.create_user(
-            username=validated_data.get('username'),
-            email=validated_data.get('email'),
-            password=validated_data.get('password'),
-        )
-        return user
-    
-     except Exception as e:
-       return "error"
-    def to_representation(self, res):
-        # This method controls how the user data is represented when serialized
-        user_data = super().to_representation(res)
-        # Add all fields you want to return here
-        user_data['id'] = res.id
-        user_data['username'] = res.username
-        user_data['email'] = res.email
-        user_data['role'] = res.role  
-        return user_data
     
 class UserLoginSerializer(TokenObtainPairSerializer):
     role = serializers.ChoiceField(choices=User.ROLE_CHOICES, required=True)
@@ -93,26 +58,45 @@ class UserLoginSerializer(TokenObtainPairSerializer):
         return data
     
 
-class AddAdminSerializer(serializers.ModelSerializer):
+class BaseUserSerializer(serializers.ModelSerializer):
+    passwordConfirm = serializers.CharField(write_only=True)
+
     class Meta:
         model = User
         fields = ['username', 'email', 'password', 'passwordConfirm']
         extra_kwargs = {'password': {'write_only': True}}
+
     def validate(self, attrs):
-        if attrs['password'] != attrs['passwordConfirm'] : 
-            raise serializers.ValidationError('passwords are not match')
+        """Ensure passwords match and remove passwordConfirm."""
+        if attrs['password'] != attrs['passwordConfirm']:
+            raise serializers.ValidationError({'password': 'Passwords do not match.'})
         attrs.pop('passwordConfirm', None)
-        return attrs 
+        return attrs
+
+    def get_role(self):
+        return 'user'  # Default role
+
     def create(self, validated_data):
+        """Create a user with the provided role."""
         try:
-            admin = User.objects.create_user(
+            user = User.objects.create_user(
                 username=validated_data['username'],
                 email=validated_data['email'],
                 password=validated_data['password'],
-                role='admin'  # Make sure your User model has this field
+                role=self.get_role()  # Use the role from the child class
             )
-            return admin
-        except IntegrityError as e:
-            raise serializers.ValidationError({"error": "User already exists"})
+            return user
+        except IntegrityError:
+            raise serializers.ValidationError({"error": "User already exists."})
         except Exception as e:
             raise serializers.ValidationError({"error": str(e)})
+        
+class RegisterUserSerializer(BaseUserSerializer):
+    """Serializer for user registration (default role: 'user')."""
+    def get_role(self):
+        return 'user'  # Explicitly returning user role
+            
+class AddAdminSerializer(BaseUserSerializer):
+    """Serializer for adding an admin (role: 'admin')."""
+    def get_role(self):
+        return 'admin'  # Explicitly returning admin role

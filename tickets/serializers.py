@@ -1,13 +1,17 @@
 from rest_framework import serializers
 from .models import User , Reservation , Movie
-from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from django.db import IntegrityError
 
 user = get_user_model()
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta : 
+        model = User
+        exclude = ['password']
+        
 
 class MovieSerializer(serializers.ModelSerializer):
     class Meta:
@@ -18,9 +22,6 @@ class ReservationSerializer(serializers.ModelSerializer):
     class Meta:
         model=Reservation
         fields='__all__'
-
-
-    
 
 class UserLoginSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
@@ -87,3 +88,4 @@ class AddAdminSerializer(BaseUserSerializer):
     """Serializer for adding an admin (role: 'admin')."""
     def get_role(self):
         return 'admin'  
+    
